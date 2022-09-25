@@ -1,6 +1,11 @@
-const knex = require('knex')
-const config = require('./knexfile')
-const env = process.env.NODE_ENV || 'development'
-const connection = knex(config[env])
+const { Store } = require('@donothing/kept')
+const Path = require('node:path')
 
-module.exports = connection
+/**
+ * @return {import('@donothing/kept').IKept}
+ */
+const connection = () => Store(Path.join(__dirname, 'dev.sqlite3'))
+
+module.exports = {
+  connection,
+}
