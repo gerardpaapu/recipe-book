@@ -7,7 +7,7 @@ function App() {
   return (
     <>
       <div className="app">
-        <h1>Fullstack Boilerplate - with Fruits!</h1>
+        <h1>Recipe Book</h1>
         <Routes>
           <Route element={<Recipe />} path="/:id" />
           <Route element={<Recipes />} path="/" />

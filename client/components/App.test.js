@@ -1,44 +1,76 @@
 import React from 'react'
-import { Provider } from 'react-redux'
 import { screen, render } from '@testing-library/react'
+import { getRecipes, getRecipe } from '../apis/recipes'
+import { MemoryRouter } from 'react-router-dom'
 
 import App from './App'
-import store from '../store'
-import { fetchFruits } from '../actions'
 
-jest.mock('../actions')
+jest.mock('../apis/recipes')
 
-fetchFruits.mockImplementation(() => () => {})
+const testRecipes = [
+  {
+    id: 1,
+    Name: 'Rice bowl',
+    url: 'https://google.com/?q=Rice%20Bowl',
+    Description: 'A bowl, but with rice in it',
+    Ingredients: ['1 bowl', 'Rice, some cooked'],
+    Author: 'Gerard Paapu',
+    Method: ['Put rice in bowl', 'eat it'],
+  },
+  {
+    id: 2,
+    Name: 'Noodle bowl',
+    url: 'https://google.com/?q=Noodle%20Bowl',
+    Description: 'A bowl, but with noodles in it',
+    Ingredients: ['1 bowl', 'Noodles, some cooked'],
+    Author: 'Gerard Paapu',
+    Method: ['Put noodles in bowl', 'eat them'],
+  },
+]
 
-test('page header includes fruit', () => {
+test('page header shows Recipe Book', async () => {
+  getRecipes.mockImplementation(() => Promise.resolve(testRecipes))
+
   render(
-    <Provider store={store}>
+    <MemoryRouter initialEntries={['/']}>
       <App />
-    </Provider>
+    </MemoryRouter>
   )
-  const heading = screen.getByRole('heading')
-  expect(heading.innerHTML).toMatch(/Fruit/)
+  const heading = await screen.findByRole('heading')
+  expect(heading.innerHTML).toMatch(/Recipe Book/)
 })
 
-test('renders an <li> for each fruit', () => {
-  const fruits = ['orange', 'persimmons', 'kiwi fruit']
-  jest.spyOn(store, 'getState')
-  store.getState.mockImplementation(() => ({ fruits }))
-
+test('renders an <li> for each recipe', async () => {
+  getRecipes.mockImplementation(() => Promise.resolve(testRecipes))
   render(
-    <Provider store={store}>
+    <MemoryRouter initialEntries={['/']}>
       <App />
-    </Provider>
+    </MemoryRouter>
   )
-  const li = screen.getAllByRole('listitem')
-  expect(li).toHaveLength(3)
+  const li = await screen.findAllByRole('listitem')
+  expect(li).toHaveLength(2)
+  expect(getRecipes).toHaveBeenCalled()
 })
 
-test('dispatches fetchFruits action', () => {
-  render(
-    <Provider store={store}>
-      <App />
-    </Provider>
+test('displays an individual recipe', async () => {
+  getRecipe.mockImplementation(() =>
+    Promise.resolve({
+      id: 1,
+      Name: 'Rice bowl',
+      url: 'https://google.com/?q=Rice%20Bowl',
+      Description: 'A bowl, but with rice in it',
+      Ingredients: ['1 bowl', 'Rice, some cooked'],
+      Author: 'Gerard Paapu',
+      Method: ['Put rice in bowl', 'eat it'],
+    })
   )
-  expect(fetchFruits).toHaveBeenCalled()
+
+  render(
+    <MemoryRouter initialEntries={['/96']}>
+      <App />
+    </MemoryRouter>
+  )
+  const p = await screen.findByText(/A bowl, but with rice in it/)
+  expect(p).not.toBeNull()
+  expect(getRecipe).toHaveBeenCalledWith('96')
 })
